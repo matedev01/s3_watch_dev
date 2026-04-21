@@ -34,8 +34,10 @@ CONFIG_LOG_COLORS=y
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 
 # ---------- LVGL component config ----------
-# Let LVGL pull its config from Kconfig rather than an lv_conf.h in tree.
-CONFIG_LV_CONF_SKIP=n
+# SKIP=y means "skip loading an external lv_conf.h" -- the lvgl managed component
+# then pulls everything from Kconfig via its generated lv_conf_kconfig.h. This is
+# what we want; =n would require us to ship our own lv_conf.h on the include path.
+CONFIG_LV_CONF_SKIP=y
 CONFIG_LV_COLOR_DEPTH_16=y
 CONFIG_LV_COLOR_16_SWAP=n
 
