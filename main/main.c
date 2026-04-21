@@ -36,6 +36,8 @@ void app_main(void)
      * the bus over to the display. */
     ESP_ERROR_CHECK(bsp_board_init());         /* I2C bus + XL9535 + panel reset/backlight */
 
+    bsp_i2c_scan();   /* log every I2C responder so mismatched addresses are obvious */
+
     if (pcf85063_init() == ESP_OK) {
         pcf85063_sync_system_time();
     } else {

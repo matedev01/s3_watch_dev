@@ -66,3 +66,20 @@ void bsp_backlight_set(uint8_t percent)
     /* Simple on/off until we wire PWM; anything > 0 lights it. */
     xl9535_digital_write(BSP_EXIO_LCD_BL, percent > 0);
 }
+
+void bsp_i2c_scan(void)
+{
+    if (!s_i2c_bus) {
+        ESP_LOGW(TAG, "i2c scan requested before bus init");
+        return;
+    }
+    ESP_LOGI(TAG, "I2C scan:");
+    int found = 0;
+    for (uint8_t addr = 0x08; addr <= 0x77; ++addr) {
+        if (i2c_master_probe(s_i2c_bus, addr, pdMS_TO_TICKS(20)) == ESP_OK) {
+            ESP_LOGI(TAG, "  0x%02X responds", addr);
+            ++found;
+        }
+    }
+    ESP_LOGI(TAG, "I2C scan done, %d device(s)", found);
+}

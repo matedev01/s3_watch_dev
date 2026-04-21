@@ -22,6 +22,9 @@ esp_err_t bsp_board_init(void);
 /** Backlight duty (0..100). Uses XL9535 pin as an on/off for now. */
 void bsp_backlight_set(uint8_t percent);
 
+/** Probe addresses 0x08..0x77 on the shared I2C bus and log the responders. */
+void bsp_i2c_scan(void);
+
 #ifdef __cplusplus
 }
 #endif

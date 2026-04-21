@@ -25,8 +25,8 @@ CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
 CONFIG_FREERTOS_HZ=1000
 
 # ---------- LCD (RGB panel) ----------
-CONFIG_LCD_RGB_ISR_IRAM_SAFE=y
-CONFIG_LCD_RGB_RESTART_IN_VSYNC=y
+# Do NOT enable LCD_RGB_ISR_IRAM_SAFE: esp_lvgl_port's on_vsync handler is not
+# in IRAM, and with IRAM_SAFE enabled the panel refuses to register it.
 
 # ---------- Logging / console ----------
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
