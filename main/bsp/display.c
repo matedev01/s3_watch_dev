@@ -8,6 +8,8 @@
 #include "esp_lcd_panel_rgb.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lvgl_port.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define TAG "display"
 
@@ -47,7 +49,7 @@ lv_disp_t *display_init(void)
             .vsync_back_porch  = BSP_LCD_VSYNC_BACK_PORCH,
             .vsync_front_porch = BSP_LCD_VSYNC_FRONT_PORCH,
             .vsync_pulse_width = BSP_LCD_VSYNC_PULSE_WIDTH,
-            .flags.pclk_active_neg = true,
+            .flags.pclk_active_neg = false,
         },
         .flags = {
             .fb_in_psram = true,
@@ -57,6 +59,24 @@ lv_disp_t *display_init(void)
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&panel_cfg, &s_panel));
     ESP_ERROR_CHECK(esp_lcd_panel_reset(s_panel));
     ESP_ERROR_CHECK(esp_lcd_panel_init(s_panel));
+
+    /* Sanity pattern: paint a horizontal R->G->B gradient directly into FB0
+       before LVGL takes over, so we can visually confirm the panel is latching
+       pixels and the lane order / PCLK polarity are correct. */
+    void *fb0 = NULL;
+    if (esp_lcd_rgb_panel_get_frame_buffer(s_panel, 1, &fb0) == ESP_OK && fb0) {
+        uint16_t *px = (uint16_t *)fb0;
+        for (int y = 0; y < BSP_LCD_V_RES; ++y) {
+            for (int x = 0; x < BSP_LCD_H_RES; ++x) {
+                uint16_t r = (x * 31) / (BSP_LCD_H_RES - 1);
+                uint16_t g = (y * 63) / (BSP_LCD_V_RES - 1);
+                uint16_t b = ((x + y) * 31) / (BSP_LCD_H_RES + BSP_LCD_V_RES - 2);
+                px[y * BSP_LCD_H_RES + x] = (r << 11) | (g << 5) | b;
+            }
+        }
+        esp_lcd_panel_draw_bitmap(s_panel, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, fb0);
+        vTaskDelay(pdMS_TO_TICKS(1500));  /* hold the pattern visible long enough to see */
+    }
 
     /* Hand the panel off to esp_lvgl_port which owns the flush task + mutex. */
     const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();

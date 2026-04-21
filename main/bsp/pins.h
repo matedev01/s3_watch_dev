@@ -23,7 +23,7 @@
 #define BSP_LCD_H_RES               480
 #define BSP_LCD_V_RES               480
 
-#define BSP_LCD_PCLK_HZ             (14 * 1000 * 1000)
+#define BSP_LCD_PCLK_HZ             (16 * 1000 * 1000)
 #define BSP_LCD_HSYNC_BACK_PORCH    30
 #define BSP_LCD_HSYNC_FRONT_PORCH   20
 #define BSP_LCD_HSYNC_PULSE_WIDTH   8
@@ -84,8 +84,11 @@
 #define BSP_EXIO_SD_CS              4
 #define BSP_EXIO_LCD_BL             5
 
-/* ---------- Touch (CST820) ---------- */
-#define BSP_TP_ADDR                 0x15
+/* ---------- Touch ---------- */
+/* On boards that ship without CST820 the footprint is often populated with an
+   FT3267 (or FT6x36-family) part at 0x38. The register layout overlaps enough
+   with CST820 that the polled read path works unchanged. */
+#define BSP_TP_ADDR                 0x38
 #define BSP_TP_INT                  16
 /* touch reset is shared with the TFT reset on the expander */
 
