@@ -31,11 +31,19 @@
 #define BSP_LCD_VSYNC_FRONT_PORCH   20
 #define BSP_LCD_VSYNC_PULSE_WIDTH   8
 
-/* ---------- RGB panel GPIOs (verify against your schematic) ---------- */
+/* ---------- RGB panel GPIOs (LilyGO T-RGB 2.1" round) ----------
+ *
+ * On this board GPIO48 is physically wired to BOTH the I2C SCL line AND the
+ * LCD G2 (DATA7) line. Only one of them is electrically active at a time:
+ *   - Before esp_lcd_panel_init(), GPIO48 is an ordinary I2C pin.
+ *   - After the RGB panel starts driving the data bus, I2C on GPIO48 is dead.
+ * This means the I2C-attached peripherals (XL9535, touch, RTC, IMU) must all
+ * be talked to BEFORE display_init() takes the bus, not after.
+ */
 #define BSP_LCD_PIN_DE              17
 #define BSP_LCD_PIN_VSYNC           3
 #define BSP_LCD_PIN_HSYNC           46
-#define BSP_LCD_PIN_PCLK            21
+#define BSP_LCD_PIN_PCLK            9
 
 /* B0..B4 */
 #define BSP_LCD_PIN_B0              10
@@ -44,25 +52,25 @@
 #define BSP_LCD_PIN_B3              13
 #define BSP_LCD_PIN_B4              14
 
-/* G0..G5 */
-#define BSP_LCD_PIN_G0              39
-#define BSP_LCD_PIN_G1              38
-#define BSP_LCD_PIN_G2              45
-#define BSP_LCD_PIN_G3              48
-#define BSP_LCD_PIN_G4              47
-#define BSP_LCD_PIN_G5              41
+/* G0..G5 (note: G2 = GPIO48 is shared with I2C SCL, see banner above) */
+#define BSP_LCD_PIN_G0              21
+#define BSP_LCD_PIN_G1              47
+#define BSP_LCD_PIN_G2              48
+#define BSP_LCD_PIN_G3              45
+#define BSP_LCD_PIN_G4              38
+#define BSP_LCD_PIN_G5              39
 
 /* R0..R4 */
 #define BSP_LCD_PIN_R0              40
-#define BSP_LCD_PIN_R1              42
-#define BSP_LCD_PIN_R2              2
-#define BSP_LCD_PIN_R3              1
-#define BSP_LCD_PIN_R4              0
+#define BSP_LCD_PIN_R1              41
+#define BSP_LCD_PIN_R2              42
+#define BSP_LCD_PIN_R3              2
+#define BSP_LCD_PIN_R4              1
 
-/* ---------- Shared I2C bus (touch + RTC + IMU + XL9535) ---------- */
+/* ---------- Shared I2C bus (XL9535 + touch + RTC + IMU) ---------- */
 #define BSP_I2C_PORT                I2C_NUM_0
 #define BSP_I2C_SDA                 8
-#define BSP_I2C_SCL                 9
+#define BSP_I2C_SCL                 48
 #define BSP_I2C_FREQ_HZ             400000
 
 /* ---------- XL9535 I/O expander ---------- */

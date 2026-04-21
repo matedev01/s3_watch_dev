@@ -30,24 +30,12 @@ void app_main(void)
     ESP_LOGI(TAG, "LilyGO T-RGB smart watch booting");
     nvs_init_or_erase();
 
-    /* Board-level init: I2C, expander, panel reset line, backlight */
-    ESP_ERROR_CHECK(bsp_board_init());
+    /* ---- Pre-LCD I2C phase ----
+     * GPIO48 is shared between I2C SCL and LCD G2 on this board. Do everything
+     * I2C-related that we can up front, while SCL still wins the mux, then hand
+     * the bus over to the display. */
+    ESP_ERROR_CHECK(bsp_board_init());         /* I2C bus + XL9535 + panel reset/backlight */
 
-    /* Display + LVGL port */
-    lv_disp_t *disp = display_init();
-    if (!disp) {
-        ESP_LOGE(TAG, "display_init failed");
-        return;
-    }
-
-    /* Touch input */
-    if (lvgl_port_lock(0)) {
-        ESP_ERROR_CHECK(touch_cst820_init(disp));
-        ui_init();
-        lvgl_port_unlock();
-    }
-
-    /* Sensors -- non-fatal if absent on a partly-populated board */
     if (pcf85063_init() == ESP_OK) {
         pcf85063_sync_system_time();
     } else {
@@ -55,6 +43,21 @@ void app_main(void)
     }
     if (qmi8658_init() != ESP_OK) {
         ESP_LOGW(TAG, "IMU not found; level app will show zeros");
+    }
+
+    /* ---- LCD + LVGL ---- */
+    lv_disp_t *disp = display_init();
+    if (!disp) {
+        ESP_LOGE(TAG, "display_init failed");
+        return;
+    }
+
+    /* Touch driver is registered post-LCD because LVGL indev needs the display.
+       Device registration itself does not drive I2C traffic. */
+    if (lvgl_port_lock(0)) {
+        ESP_ERROR_CHECK(touch_cst820_init(disp));
+        ui_init();
+        lvgl_port_unlock();
     }
 
     ESP_LOGI(TAG, "boot complete, free heap = %u", (unsigned)esp_get_free_heap_size());
