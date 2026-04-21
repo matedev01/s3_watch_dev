@@ -1,0 +1,35 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "bsp/bsp.c"
+        "bsp/xl9535.c"
+        "bsp/st7701.c"
+        "bsp/display.c"
+        "bsp/touch_cst820.c"
+        "bsp/pcf85063.c"
+        "bsp/qmi8658.c"
+        "ui/ui.c"
+        "ui/screen_watchface.c"
+        "ui/screen_menu.c"
+        "ui/screen_settings.c"
+        "ui/screen_compass.c"
+    INCLUDE_DIRS
+        "."
+        "bsp"
+        "ui"
+    REQUIRES
+        driver
+        esp_driver_gpio
+        esp_driver_i2c
+        esp_lcd
+        esp_timer
+        esp_psram
+        esp_system
+        nvs_flash
+        freertos
+    PRIV_REQUIRES
+        lvgl
+        esp_lvgl_port
+)
+
+target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-unused-function -Wno-unused-variable)

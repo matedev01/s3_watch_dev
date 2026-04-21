@@ -1,0 +1,16 @@
+## IDF Component Manager manifest
+## Resolved at build time into managed_components/
+
+dependencies:
+  idf:
+    version: ">=5.5.0"
+
+  # LVGL graphics library
+  lvgl/lvgl:
+    version: "~8.3.11"
+
+  # Espressif's LVGL port (handles RTOS task, locks, display flush hooks)
+  espressif/esp_lvgl_port:
+    version: "~2.3.0"
+    rules:
+      - if: "idf_version >=5.0"
