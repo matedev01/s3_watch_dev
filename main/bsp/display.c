@@ -60,9 +60,11 @@ lv_disp_t *display_init(void)
     ESP_ERROR_CHECK(esp_lcd_panel_reset(s_panel));
     ESP_ERROR_CHECK(esp_lcd_panel_init(s_panel));
 
-    /* Sanity pattern: paint a horizontal R->G->B gradient directly into FB0
-       before LVGL takes over, so we can visually confirm the panel is latching
-       pixels and the lane order / PCLK polarity are correct. */
+    /* Sanity pattern: paint an X-axis red / Y-axis green / diagonal blue gradient
+       into FB0 so the colors, pixel order, and PCLK polarity are visually obvious
+       before LVGL takes over. Turn the backlight on FIRST -- otherwise the panel
+       is dark and the test tells us nothing. */
+    bsp_backlight_set(100);
     void *fb0 = NULL;
     if (esp_lcd_rgb_panel_get_frame_buffer(s_panel, 1, &fb0) == ESP_OK && fb0) {
         uint16_t *px = (uint16_t *)fb0;
@@ -75,7 +77,7 @@ lv_disp_t *display_init(void)
             }
         }
         esp_lcd_panel_draw_bitmap(s_panel, 0, 0, BSP_LCD_H_RES, BSP_LCD_V_RES, fb0);
-        vTaskDelay(pdMS_TO_TICKS(1500));  /* hold the pattern visible long enough to see */
+        vTaskDelay(pdMS_TO_TICKS(2500));  /* hold the pattern long enough to see */
     }
 
     /* Hand the panel off to esp_lvgl_port which owns the flush task + mutex. */
